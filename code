@@ -1,0 +1,165 @@
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <string.h>
+
+#define MAX 100
+
+typedef struct {
+
+    char task[100];
+
+    int done; // 0 = 미완료, 1 = 완료
+
+} Todo;
+
+Todo todos[MAX];
+
+int count = 0;
+
+// 파일 저장
+
+void saveToFile() {
+
+    FILE *fp = fopen("todo.txt", "w");
+
+    if (fp == NULL) return;
+
+    for (int i = 0; i < count; i++) {
+
+        fprintf(fp, "%d|%s\n", todos[i].done, todos[i].task);
+
+    }
+
+    fclose(fp);
+
+}
+
+// 파일 불러오기
+
+void loadFromFile() {
+
+    FILE *fp = fopen("todo.txt", "r");
+
+    if (fp == NULL) return;
+
+    while (fscanf(fp, "%d|%[^\n]\n", &todos[count].done, todos[count].task) != EOF) {
+
+        count++;
+
+    }
+
+    fclose(fp);
+
+}
+
+// 할 일 추가
+
+void addTodo() {
+
+    if (count >= MAX) {
+
+        printf("더 이상 추가할 수 없습니다.\n");
+
+        return;
+
+    }
+
+    printf("할 일을 입력하세요: ");
+
+    getchar(); // 버퍼 정리
+
+    fgets(todos[count].task, sizeof(todos[count].task), stdin);
+
+    todos[count].task[strcspn(todos[count].task, "\n")] = 0;
+
+    todos[count].done = 0;
+
+    count++;
+
+    saveToFile();
+
+}
+
+// 목록 보기
+
+void showTodos() {
+
+    printf("\n--- Todo 목록 ---\n");
+
+    for (int i = 0; i < count; i++) {
+
+        printf("%d. [%c] %s\n", i + 1, todos[i].done ? 'O' : 'X', todos[i].task);
+
+    }
+
+}
+
+// 완료 체크
+
+void completeTodo() {
+
+    int num;
+
+    printf("완료할 번호 입력: ");
+
+    scanf("%d", &num);
+
+    if (num < 1 || num > count) {
+
+        printf("잘못된 번호입니다.\n");
+
+        return;
+
+    }
+
+    todos[num - 1].done = 1;
+
+    saveToFile();
+
+}
+
+int main() {
+
+    int choice;
+
+    loadFromFile();
+
+    while (1) {
+
+        printf("\n1. 할 일 추가\n");
+
+        printf("2. 목록 보기\n");
+
+        printf("3. 완료 체크\n");
+
+        printf("0. 종료\n");
+
+        printf("선택: ");
+
+        scanf("%d", &choice);
+
+        switch (choice) {
+
+            case 1: addTodo(); break;
+
+            case 2: showTodos(); break;
+
+            case 3: completeTodo(); break;
+
+            case 0:
+
+                printf("종료합니다.\n");
+
+                return 0;
+
+            default:
+
+                printf("잘못된 입력입니다.\n");
+
+        }
+
+    }
+
+}
